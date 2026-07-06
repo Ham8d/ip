@@ -9,28 +9,20 @@ workflows:
     scripts:
       - name: Install Theos and iOS SDKs
         script: |
-          echo "[-] Installing ldid..."
           brew install ldid
-
-          echo "[-] Cloning Theos..."
           git clone --recursive https://github.com/theos/theos.git $THEOS
-
-          echo "[-] Cloning iOS SDKs..."
           git clone --depth=1 https://github.com/theos/sdks.git /tmp/theos-sdks
           cp -r /tmp/theos-sdks/*.sdk $THEOS/sdks/
           rm -rf /tmp/theos-sdks
 
       - name: Build Dylib
         script: |
-          echo "[-] Building dylib..."
           make
-
           DYLIB=$(find .theos/obj -name "*.dylib" | head -1)
           if [ -n "$DYLIB" ]; then
             cp "$DYLIB" ./ChangeIP.dylib
             echo "✅ Done: $DYLIB"
           else
-            echo "❌ Dylib not found"
             find .theos -name "*.dylib"
             exit 1
           fi
