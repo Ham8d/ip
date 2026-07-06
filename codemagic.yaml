@@ -1,0 +1,32 @@
+workflows:
+  ios-dylib-build:
+    name: Build iOS Dylib using Theos
+    max_build_duration: 20
+    instance_type: mac_mini_m1 # استخدام سيرفر ماك لتوافق الـ iOS Compiler
+    environment:
+      vars:
+        THEOS: $CM_BUILD_DIR/theos
+    scripts:
+      - name: Install Dependencies and Theos
+        script: |
+          echo "[-] Installing iOS Toolchain and Theos..."
+          # تحميل بيئة Theos بالكامل
+          git clone --recursive https://github.com/theos/theos.git $THEOS
+          
+          # تحميل الـ SDKs الخاصة بـ iOS (تحديداً iOS 14 لتناسب الـ Tweaks)
+          curl -LO https://github.com/theos/sdks/raw/master/iPhoneOS14.5.sdk.tar.xz
+          tar -xf iPhoneOS14.5.sdk.tar.xz -C $THEOS/sdks/
+          rm iPhoneOS14.5.sdk.tar.xz
+
+      - name: Build Tweak (Dylib)
+        script: |
+          echo "[-] Compiling Tweak..."
+          # أمر بناء المشروع عبر Theos
+          make package FINALPACKAGE=1
+          
+          # استخراج ملف الـ dylib من المجلد المؤقت وضعه في المجلد الرئيسي
+          cp .theos/obj/debug/ChangeIP.dylib ./ChangeIP.dylib || cp .theos/obj/ChangeIP.dylib ./ChangeIP.dylib
+
+    artifacts:
+      - ./*.dylib
+      - .packages/*.deb
