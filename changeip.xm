@@ -2,7 +2,7 @@
 #import <substrate.h>
 
 // ============================
-// UUID Management
+// UUID
 // ============================
 static NSString *getOrCreateUUID() {
     NSString *uuid = [[NSUserDefaults standardUserDefaults] stringForKey:@"TiraathFakeUUID"];
@@ -21,63 +21,63 @@ static void generateNewUUID() {
 }
 
 // ============================
-// Floating Menu Controller
+// Global window reference
 // ============================
-@interface TiraathMenuController : UIViewController
+static UIWindow *gFloatingWindow = nil;
+static UIWindow *gMenuWindow = nil;
+static BOOL gCreated = NO;
+
+// ============================
+// Menu View Controller
+// ============================
+@interface TiraathMenu : UIViewController
 @end
 
-@implementation TiraathMenuController
+@implementation TiraathMenu
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.view.backgroundColor = [UIColor clearColor];
+    self.view.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.45];
 
-    // خلفية شبه شفافة للإغلاق عند الضغط خارج المنيو
-    UIView *dimView = [[UIView alloc] initWithFrame:self.view.bounds];
-    dimView.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.01];
-    dimView.userInteractionEnabled = YES;
-    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismissMenu)];
-    [dimView addGestureRecognizer:tap];
-    [self.view addSubview:dimView];
+    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismiss)];
+    [self.view addGestureRecognizer:tap];
 
-    // بطاقة المنيو
-    CGFloat cardW = 270;
-    CGFloat cardH = 220;
-    CGFloat screenW = self.view.bounds.size.width;
-    CGFloat screenH = self.view.bounds.size.height;
+    CGFloat w = 270, h = 215;
+    CGFloat sw = [UIScreen mainScreen].bounds.size.width;
+    CGFloat sh = [UIScreen mainScreen].bounds.size.height;
 
-    UIView *card = [[UIView alloc] initWithFrame:CGRectMake((screenW - cardW) / 2,
-                                                             (screenH - cardH) / 2,
-                                                             cardW, cardH)];
-    card.backgroundColor = [UIColor colorWithWhite:0.13 alpha:0.97];
+    UIView *card = [[UIView alloc] initWithFrame:CGRectMake((sw-w)/2, (sh-h)/2, w, h)];
+    card.backgroundColor = [UIColor colorWithRed:0.12 green:0.12 blue:0.14 alpha:0.97];
     card.layer.cornerRadius = 18;
     card.clipsToBounds = YES;
+    card.userInteractionEnabled = YES;
+    UITapGestureRecognizer *blockTap = [[UITapGestureRecognizer alloc] init];
+    [card addGestureRecognizer:blockTap];
     [self.view addSubview:card];
 
-    // UUID label
+    // UUID header
     NSString *uuid = getOrCreateUUID();
-    NSString *shortUUID = [uuid substringToIndex:8];
+    UILabel *title = [[UILabel alloc] initWithFrame:CGRectMake(w-15-180, 15, 180, 18)];
+    title.text = @"المعرّف الحالي:";
+    title.textAlignment = NSTextAlignmentRight;
+    title.font = [UIFont systemFontOfSize:13 weight:UIFontWeightSemibold];
+    title.textColor = [UIColor whiteColor];
+    [card addSubview:title];
 
-    UILabel *uuidTitle = [[UILabel alloc] initWithFrame:CGRectMake(15, 15, cardW - 50, 18)];
-    uuidTitle.text = @"المعرّف الحالي:";
-    uuidTitle.font = [UIFont systemFontOfSize:13 weight:UIFontWeightSemibold];
-    uuidTitle.textColor = [UIColor whiteColor];
-    uuidTitle.textAlignment = NSTextAlignmentRight;
-    [card addSubview:uuidTitle];
+    UILabel *uuidLbl = [[UILabel alloc] initWithFrame:CGRectMake(w-15-180, 35, 180, 18)];
+    uuidLbl.text = [NSString stringWithFormat:@"...%@", [uuid substringToIndex:8]];
+    uuidLbl.textAlignment = NSTextAlignmentRight;
+    uuidLbl.font = [UIFont fontWithName:@"Courier" size:13];
+    uuidLbl.textColor = [UIColor colorWithRed:0.35 green:0.75 blue:1.0 alpha:1.0];
+    [card addSubview:uuidLbl];
 
-    UILabel *uuidValue = [[UILabel alloc] initWithFrame:CGRectMake(15, 33, cardW - 50, 18)];
-    uuidValue.text = [NSString stringWithFormat:@"...%@", shortUUID];
-    uuidValue.font = [UIFont fontWithName:@"Courier" size:13];
-    uuidValue.textColor = [UIColor colorWithRed:0.4 green:0.8 blue:1.0 alpha:1.0];
-    uuidValue.textAlignment = NSTextAlignmentRight;
-    [card addSubview:uuidValue];
-
-    // زر info
+    // Info button
     UIButton *infoBtn = [UIButton buttonWithType:UIButtonTypeSystem];
-    infoBtn.frame = CGRectMake(cardW - 42, 15, 30, 30);
-    if (@available(iOS 13.0, *)) {
-        [infoBtn setImage:[[UIImage systemImageNamed:@"info.circle"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
-                 forState:UIControlStateNormal];
+    infoBtn.frame = CGRectMake(10, 12, 32, 32);
+    if (@available(iOS 13, *)) {
+        UIImage *img = [[UIImage systemImageNamed:@"info.circle"]
+                        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        [infoBtn setImage:img forState:UIControlStateNormal];
     } else {
         [infoBtn setTitle:@"ⓘ" forState:UIControlStateNormal];
     }
@@ -85,214 +85,224 @@ static void generateNewUUID() {
     [infoBtn addTarget:self action:@selector(showInfo) forControlEvents:UIControlEventTouchUpInside];
     [card addSubview:infoBtn];
 
-    // فاصل
-    UIView *sep1 = [[UIView alloc] initWithFrame:CGRectMake(0, 65, cardW, 0.5)];
-    sep1.backgroundColor = [[UIColor whiteColor] colorWithAlphaComponent:0.15];
-    [card addSubview:sep1];
+    // Separator
+    UIView *s1 = [[UIView alloc] initWithFrame:CGRectMake(0, 63, w, 0.5)];
+    s1.backgroundColor = [[UIColor whiteColor] colorWithAlphaComponent:0.12];
+    [card addSubview:s1];
 
-    // زر: توليد معرّف جديد
+    // Generate button
     UIButton *genBtn = [UIButton buttonWithType:UIButtonTypeSystem];
-    genBtn.frame = CGRectMake(0, 65, cardW, 60);
-    genBtn.tintColor = [UIColor whiteColor];
+    genBtn.frame = CGRectMake(0, 63, w, 60);
+    [genBtn addTarget:self action:@selector(doGenerate) forControlEvents:UIControlEventTouchUpInside];
 
-    UILabel *genLabel = [[UILabel alloc] initWithFrame:CGRectMake(15, 0, cardW - 55, 60)];
-    genLabel.text = @"توليد معرّف جديد وإعادة التشغيل";
-    genLabel.font = [UIFont systemFontOfSize:14];
-    genLabel.textColor = [UIColor whiteColor];
-    genLabel.textAlignment = NSTextAlignmentRight;
-    genLabel.userInteractionEnabled = NO;
-    [genBtn addSubview:genLabel];
+    UILabel *genLbl = [[UILabel alloc] initWithFrame:CGRectMake(50, 0, w-60, 60)];
+    genLbl.text = @"توليد معرّف جديد وإعادة التشغيل";
+    genLbl.font = [UIFont systemFontOfSize:14];
+    genLbl.textColor = [UIColor whiteColor];
+    genLbl.textAlignment = NSTextAlignmentRight;
+    genLbl.numberOfLines = 2;
+    genLbl.userInteractionEnabled = NO;
+    [genBtn addSubview:genLbl];
 
-    if (@available(iOS 13.0, *)) {
-        UIImageView *refreshIcon = [[UIImageView alloc] initWithFrame:CGRectMake(cardW - 45, 18, 22, 22)];
-        refreshIcon.image = [[UIImage systemImageNamed:@"arrow.clockwise"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-        refreshIcon.tintColor = [UIColor whiteColor];
-        refreshIcon.userInteractionEnabled = NO;
-        [genBtn addSubview:refreshIcon];
+    if (@available(iOS 13, *)) {
+        UIImageView *iv = [[UIImageView alloc] initWithFrame:CGRectMake(12, 18, 24, 24)];
+        iv.image = [[UIImage systemImageNamed:@"arrow.clockwise"]
+                    imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        iv.tintColor = [UIColor whiteColor];
+        iv.userInteractionEnabled = NO;
+        [genBtn addSubview:iv];
     }
-
-    [genBtn addTarget:self action:@selector(generateAndRestart) forControlEvents:UIControlEventTouchUpInside];
     [card addSubview:genBtn];
 
-    // فاصل
-    UIView *sep2 = [[UIView alloc] initWithFrame:CGRectMake(0, 125, cardW, 0.5)];
-    sep2.backgroundColor = [[UIColor whiteColor] colorWithAlphaComponent:0.15];
-    [card addSubview:sep2];
+    // Separator
+    UIView *s2 = [[UIView alloc] initWithFrame:CGRectMake(0, 123, w, 0.5)];
+    s2.backgroundColor = [[UIColor whiteColor] colorWithAlphaComponent:0.12];
+    [card addSubview:s2];
 
-    // زر: مسح البيانات
+    // Clear button
     UIButton *clearBtn = [UIButton buttonWithType:UIButtonTypeSystem];
-    clearBtn.frame = CGRectMake(0, 125, cardW, 60);
+    clearBtn.frame = CGRectMake(0, 123, w, 60);
+    [clearBtn addTarget:self action:@selector(doClear) forControlEvents:UIControlEventTouchUpInside];
 
-    UILabel *clearLabel = [[UILabel alloc] initWithFrame:CGRectMake(15, 0, cardW - 55, 60)];
-    clearLabel.text = @"مسح البيانات وتوليد معرّف جديد";
-    clearLabel.font = [UIFont systemFontOfSize:14];
-    clearLabel.textColor = [UIColor colorWithRed:1.0 green:0.3 blue:0.3 alpha:1.0];
-    clearLabel.textAlignment = NSTextAlignmentRight;
-    clearLabel.userInteractionEnabled = NO;
-    [clearBtn addSubview:clearLabel];
+    UILabel *clearLbl = [[UILabel alloc] initWithFrame:CGRectMake(50, 0, w-60, 60)];
+    clearLbl.text = @"مسح البيانات وتوليد معرّف جديد";
+    clearLbl.font = [UIFont systemFontOfSize:14];
+    clearLbl.textColor = [UIColor colorWithRed:1.0 green:0.3 blue:0.3 alpha:1.0];
+    clearLbl.textAlignment = NSTextAlignmentRight;
+    clearLbl.numberOfLines = 2;
+    clearLbl.userInteractionEnabled = NO;
+    [clearBtn addSubview:clearLbl];
 
-    if (@available(iOS 13.0, *)) {
-        UIImageView *trashIcon = [[UIImageView alloc] initWithFrame:CGRectMake(cardW - 45, 18, 22, 22)];
-        trashIcon.image = [[UIImage systemImageNamed:@"trash"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-        trashIcon.tintColor = [UIColor colorWithRed:1.0 green:0.3 blue:0.3 alpha:1.0];
-        trashIcon.userInteractionEnabled = NO;
-        [clearBtn addSubview:trashIcon];
+    if (@available(iOS 13, *)) {
+        UIImageView *iv = [[UIImageView alloc] initWithFrame:CGRectMake(12, 18, 24, 24)];
+        iv.image = [[UIImage systemImageNamed:@"trash"]
+                    imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        iv.tintColor = [UIColor colorWithRed:1.0 green:0.3 blue:0.3 alpha:1.0];
+        iv.userInteractionEnabled = NO;
+        [clearBtn addSubview:iv];
     }
-
-    [clearBtn addTarget:self action:@selector(clearAndRestart) forControlEvents:UIControlEventTouchUpInside];
     [card addSubview:clearBtn];
 
-    // نص الحقوق
-    UILabel *copyright = [[UILabel alloc] initWithFrame:CGRectMake(0, 195, cardW, 20)];
-    copyright.text = @"© حقوق التراث ستور";
-    copyright.font = [UIFont systemFontOfSize:10];
-    copyright.textColor = [[UIColor whiteColor] colorWithAlphaComponent:0.35];
-    copyright.textAlignment = NSTextAlignmentCenter;
-    [card addSubview:copyright];
+    // Copyright
+    UILabel *copy = [[UILabel alloc] initWithFrame:CGRectMake(0, 190, w, 20)];
+    copy.text = @"© حقوق التراث ستور";
+    copy.font = [UIFont systemFontOfSize:10];
+    copy.textColor = [[UIColor whiteColor] colorWithAlphaComponent:0.35];
+    copy.textAlignment = NSTextAlignmentCenter;
+    [card addSubview:copy];
 }
 
 - (void)showInfo {
     NSString *uuid = getOrCreateUUID();
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"هوية الجهاز (UUID)"
-        message:[NSString stringWithFormat:@"معرّف جهازك النشط حالياً هو:\n\n%@\n\n© حقوق التراث ستور", uuid]
+    UIAlertController *a = [UIAlertController
+        alertControllerWithTitle:@"هوية الجهاز (UUID)"
+        message:[NSString stringWithFormat:
+            @"معرّف جهازك النشط حالياً هو:\n\n%@\n\nهذا المعرّف يخفي البصمة الحقيقية لجهازك لتجاوز حظر الأجهزة على انستقرام. توليد معرّف جديد سيمنحك هوية جديدة كلياً.\n\n© حقوق التراث ستور", uuid]
         preferredStyle:UIAlertControllerStyleAlert];
-    [alert addAction:[UIAlertAction actionWithTitle:@"نسخ المعرّف"
-        style:UIAlertActionStyleDefault handler:^(UIAlertAction *a) {
+    [a addAction:[UIAlertAction actionWithTitle:@"نسخ المعرّف"
+        style:UIAlertActionStyleDefault handler:^(UIAlertAction *x) {
             [UIPasteboard generalPasteboard].string = uuid;
         }]];
-    [alert addAction:[UIAlertAction actionWithTitle:@"حسناً"
+    [a addAction:[UIAlertAction actionWithTitle:@"حسناً"
         style:UIAlertActionStyleCancel handler:nil]];
-    [self presentViewController:alert animated:YES completion:nil];
+    [self presentViewController:a animated:YES completion:nil];
 }
 
-- (void)generateAndRestart {
+- (void)doGenerate {
     generateNewUUID();
-    [self dismissMenu];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)),
-                   dispatch_get_main_queue(), ^{ exit(0); });
+    [self dismiss];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.4*NSEC_PER_SEC)),
+        dispatch_get_main_queue(), ^{ exit(0); });
 }
 
-- (void)clearAndRestart {
-    NSString *appDomain = [[NSBundle mainBundle] bundleIdentifier];
-    [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:appDomain];
+- (void)doClear {
+    [[NSUserDefaults standardUserDefaults]
+        removePersistentDomainForName:[[NSBundle mainBundle] bundleIdentifier]];
     generateNewUUID();
-    [self dismissMenu];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)),
-                   dispatch_get_main_queue(), ^{ exit(0); });
+    [self dismiss];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.4*NSEC_PER_SEC)),
+        dispatch_get_main_queue(), ^{ exit(0); });
 }
 
-- (void)dismissMenu {
-    [self dismissViewControllerAnimated:YES completion:nil];
+- (void)dismiss {
+    gMenuWindow.hidden = YES;
+    gMenuWindow = nil;
 }
 
 @end
 
 // ============================
-// Floating Button Controller
+// Floating Button
 // ============================
-@interface TiraathFloatingController : UIViewController
-@property (nonatomic, strong) UIButton *floatingBtn;
+@interface TiraathFloat : UIViewController
 @end
 
-@implementation TiraathFloatingController
+@implementation TiraathFloat
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor clearColor];
 
-    self.floatingBtn = [UIButton buttonWithType:UIButtonTypeCustom];
-    self.floatingBtn.frame = CGRectMake(0, 0, 52, 52);
-    self.floatingBtn.layer.cornerRadius = 26;
-    self.floatingBtn.clipsToBounds = YES;
-    self.floatingBtn.backgroundColor = [UIColor colorWithWhite:0.1 alpha:0.88];
-    self.floatingBtn.layer.borderColor = [UIColor colorWithRed:0.3 green:0.7 blue:1.0 alpha:0.9].CGColor;
-    self.floatingBtn.layer.borderWidth = 1.8;
+    UIButton *btn = [UIButton buttonWithType:UIButtonTypeCustom];
+    btn.frame = CGRectMake(0, 0, 52, 52);
+    btn.layer.cornerRadius = 26;
+    btn.clipsToBounds = YES;
+    btn.backgroundColor = [UIColor colorWithWhite:0.1 alpha:0.85];
+    btn.layer.borderColor = [UIColor colorWithRed:0.25 green:0.65 blue:1.0 alpha:0.9].CGColor;
+    btn.layer.borderWidth = 2;
 
-    UILabel *iconLbl = [[UILabel alloc] initWithFrame:self.floatingBtn.bounds];
-    iconLbl.text = @"🌐";
-    iconLbl.textAlignment = NSTextAlignmentCenter;
-    iconLbl.font = [UIFont systemFontOfSize:26];
-    iconLbl.userInteractionEnabled = NO;
-    [self.floatingBtn addSubview:iconLbl];
+    UILabel *ic = [[UILabel alloc] initWithFrame:btn.bounds];
+    ic.text = @"🌐";
+    ic.textAlignment = NSTextAlignmentCenter;
+    ic.font = [UIFont systemFontOfSize:26];
+    ic.userInteractionEnabled = NO;
+    [btn addSubview:ic];
 
-    [self.floatingBtn addTarget:self action:@selector(onTap) forControlEvents:UIControlEventTouchUpInside];
+    [btn addTarget:self action:@selector(onTap) forControlEvents:UIControlEventTouchUpInside];
 
-    UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(onDrag:)];
-    [self.floatingBtn addGestureRecognizer:pan];
+    UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc]
+        initWithTarget:self action:@selector(onDrag:)];
+    [btn addGestureRecognizer:pan];
 
-    [self.view addSubview:self.floatingBtn];
+    [self.view addSubview:btn];
 }
 
 - (void)onTap {
-    TiraathMenuController *menu = [[TiraathMenuController alloc] init];
-    menu.modalPresentationStyle = UIModalPresentationOverFullScreen;
-    menu.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
+    if (gMenuWindow) {
+        gMenuWindow.hidden = YES;
+        gMenuWindow = nil;
+        return;
+    }
 
-    UIViewController *top = self;
-    while (top.presentedViewController) top = top.presentedViewController;
-    [top presentViewController:menu animated:YES completion:nil];
+    UIWindow *mw = nil;
+    if (@available(iOS 13, *)) {
+        if (gFloatingWindow.windowScene) {
+            mw = [[UIWindow alloc] initWithWindowScene:gFloatingWindow.windowScene];
+        }
+    }
+    if (!mw) mw = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+
+    mw.frame = [UIScreen mainScreen].bounds;
+    mw.windowLevel = UIWindowLevelAlert + 90;
+    mw.backgroundColor = [UIColor clearColor];
+    mw.rootViewController = [[TiraathMenu alloc] init];
+    mw.hidden = NO;
+    gMenuWindow = mw;
 }
 
 - (void)onDrag:(UIPanGestureRecognizer *)g {
-    UIWindow *win = self.view.window;
-    CGPoint delta = [g translationInView:g.view.superview];
-    CGRect f = win.frame;
-    f.origin.x += delta.x;
-    f.origin.y += delta.y;
-
-    // تقييد داخل الشاشة
-    CGSize screen = [UIScreen mainScreen].bounds.size;
-    f.origin.x = MAX(0, MIN(f.origin.x, screen.width - f.size.width));
-    f.origin.y = MAX(50, MIN(f.origin.y, screen.height - f.size.height - 30));
-
-    win.frame = f;
+    CGPoint d = [g translationInView:g.view.superview];
+    CGRect f = gFloatingWindow.frame;
+    CGSize s = [UIScreen mainScreen].bounds.size;
+    f.origin.x = MAX(0, MIN(f.origin.x + d.x, s.width  - f.size.width));
+    f.origin.y = MAX(40, MIN(f.origin.y + d.y, s.height - f.size.height - 20));
+    gFloatingWindow.frame = f;
     [g setTranslation:CGPointZero inView:g.view.superview];
 }
 
 @end
 
 // ============================
-// Hook: تزوير UUID
+// UUID Hook
 // ============================
 %hook UIDevice
-
 - (NSUUID *)identifierForVendor {
     return [[NSUUID alloc] initWithUUIDString:getOrCreateUUID()];
 }
-
 %end
 
 // ============================
-// Constructor: تشغيل الزر العائم
+// Create window when app is active
 // ============================
-%ctor {
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)),
-                   dispatch_get_main_queue(), ^{
+static void createWindow() {
+    if (gCreated) return;
+    gCreated = YES;
 
-        __block UIWindow *floatWin = nil;
-
-        if (@available(iOS 13.0, *)) {
-            for (UIWindowScene *scene in [UIApplication sharedApplication].connectedScenes) {
-                if (scene.activationState == UISceneActivationStateForegroundActive) {
-                    floatWin = [[UIWindow alloc] initWithWindowScene:(UIWindowScene *)scene];
-                    break;
-                }
+    UIWindow *win = nil;
+    if (@available(iOS 13, *)) {
+        for (UIScene *scene in [UIApplication sharedApplication].connectedScenes) {
+            if ([scene isKindOfClass:[UIWindowScene class]] &&
+                scene.activationState == UISceneActivationStateForegroundActive) {
+                win = [[UIWindow alloc] initWithWindowScene:(UIWindowScene *)scene];
+                break;
             }
         }
+    }
+    if (!win) {
+        win = [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, 52, 52)];
+    }
 
-        if (!floatWin) {
-            floatWin = [[UIWindow alloc] initWithFrame:CGRectMake(20, 200, 52, 52)];
-        } else {
-            floatWin.frame = CGRectMake(20, 200, 52, 52);
-        }
-
-        floatWin.windowLevel = UIWindowLevelAlert + 100;
-        floatWin.backgroundColor = [UIColor clearColor];
-        floatWin.rootViewController = [[TiraathFloatingController alloc] init];
-        floatWin.hidden = NO;
-
-        // الاحتفاظ بالمرجع لمنع الحذف من الذاكرة
-        static UIWindow *_keepAlive;
-        _keepAlive = floatWin;
-    });
+    win.frame = CGRectMake(20, 200, 52, 52);
+    win.windowLevel = UIWindowLevelStatusBar + 200;
+    win.backgroundColor = [UIColor clearColor];
+    win.rootViewController = [[TiraathFloat alloc] init];
+    win.hidden = NO;
+    gFloatingWindow = win;
 }
+
+%hook UIApplication
+- (void)applicationDidBecomeActive:(UIApplication *)app {
+    %orig;
+    dispatch_async(dispatch_get_main_queue(), ^{ createWindow(); });
+}
+%end
