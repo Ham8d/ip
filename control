@@ -1,8 +1,0 @@
-Package: com.yourname.changeip
-Name: ChangeIP
-Depends: mobilesubstrate
-Version: 1.0.0
-Architecture: iphoneos-arm
-Description: An iOS tweak to spoof device info.
-Author: Mohammed
-Section: Tweaks
