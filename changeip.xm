@@ -1,11 +1,10 @@
 #import <UIKit/UIKit.h>
 #import <substrate.h>
 
-// إنشاء جاف لعمل Hook على معرّف الجهاز (IDFV) كمثال لتخطي الحظر
+// عمل Hook على معرّف الجهاز (IDFV)
 %hook UIDevice
 
 - (NSUUID *)identifierForVendor {
-    // هنا نقوم بتوليد UUID جديد أو جلب المعرّف العشوائي المحفوظ سابقاً
     NSString *savedUUID = [[NSUserDefaults standardUserDefaults] stringForKey:@"CustomFakeUUID"];
     if (!savedUUID) {
         savedUUID = @"4ABEF3F0-E8B6-4807-AA98-D3F2CA40B763"; // المعرّف الافتراضي
@@ -16,7 +15,7 @@
 
 %end
 
-// دالة لإظهار التنبيه (Alert) الموضح في صورك عند تشغيل التطبيق
+// دالة إظهار التنبيه المتوافقة مع الأنظمة الجديدة والقديمة
 void showCustomAlert() {
     dispatch_async(dispatch_get_main_queue(), ^{
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"هوية الجهاز (UUID)" 
@@ -32,15 +31,31 @@ void showCustomAlert() {
         [alert addAction:copyAction];
         [alert addAction:okAction];
         
-        [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:alert animated:YES completion:nil];
+        // جلب النافذة النشطة بأمان (iOS 13+)
+        UIWindow *keyWindow = nil;
+        for (UIWindowScene *scene in [UIApplication sharedApplication].connectedScenes) {
+            if (scene.activationState == UISceneActivationStateForegroundActive) {
+                for (UIWindow *window in scene.windows) {
+                    if (window.isKeyWindow) {
+                        keyWindow = window;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if (!keyWindow) {
+            keyWindow = [UIApplication sharedApplication].windows.firstObject;
+        }
+        
+        [keyWindow.rootViewController presentViewController:alert animated:YES completion:nil];
     });
 }
 
-// نقطة انطلاق الدايلب عند حقنه داخل التطبيق
+// نقطة انطلاق الدايلب
 %ctor {
     %init;
     
-    // الانتظار حتى يتم تحميل واجهة التطبيق بالكامل ثم إظهار التنبيه
     [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidFinishLaunchingNotification 
                                                       object:nil 
                                                        queue:[NSOperationQueue mainQueue] 
