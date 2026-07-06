@@ -28,18 +28,12 @@ workflows:
           DYLIB=$(find .theos/obj -name "*.dylib" | head -1)
           if [ -n "$DYLIB" ]; then
             cp "$DYLIB" ./ChangeIP.dylib
-            echo "✅ Dylib found: $DYLIB"
+            echo "✅ Done: $DYLIB"
           else
-            echo "❌ Dylib not found — listing .theos:"
+            echo "❌ Dylib not found"
             find .theos -name "*.dylib"
             exit 1
           fi
 
-      - name: Build Final Package (.deb)
-        script: |
-          echo "[-] Building .deb package..."
-          make package FINALPACKAGE=1
-
     artifacts:
       - ChangeIP.dylib
-      - packages/*.deb
