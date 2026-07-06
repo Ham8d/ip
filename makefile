@@ -6,8 +6,8 @@ ARCHS = arm64 arm64e
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = ChangeIP
-ChangeIP_FILES = changeip.xm
+ChangeIP_FILES = changeip.m
 ChangeIP_FRAMEWORKS = UIKit
-ChangeIP_CFLAGS = -Wno-deprecated-declarations -Wno-unused-but-set-variable
+ChangeIP_CFLAGS = -Wno-deprecated-declarations
 
 include $(THEOS)/makefiles/tweak.mk
