@@ -27,16 +27,17 @@ static void tiraathNewUUID() {
 static UIWindow *gBtnWindow  = nil;
 static UIWindow *gMenuWindow = nil;
 static BOOL      gDone       = NO;
+
 @interface TiraathMenuVC : UIViewController
 @end
+
 @implementation TiraathMenuVC
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.5];
-    UITapGestureRecognizer *bg = [[UITapGestureRecognizer alloc]
-        initWithTarget:self action:@selector(closeMenu)];
-    [self.view addGestureRecognizer:bg];
+    [self.view addGestureRecognizer:[[UITapGestureRecognizer alloc]
+        initWithTarget:self action:@selector(closeMenu)]];
 
     CGRect scr = [UIScreen mainScreen].bounds;
     CGFloat cw = MIN(scr.size.width - 60, 290), ch = 255;
@@ -50,7 +51,6 @@ static BOOL      gDone       = NO;
 
     NSString *uuid = tiraathGetUUID();
 
-    // UUID title
     UILabel *t1 = [[UILabel alloc] initWithFrame:CGRectMake(cw-170, 15, 155, 18)];
     t1.text = @"المعرّف الحالي:";
     t1.font = [UIFont systemFontOfSize:13 weight:UIFontWeightSemibold];
@@ -58,7 +58,6 @@ static BOOL      gDone       = NO;
     t1.textAlignment = NSTextAlignmentRight;
     [card addSubview:t1];
 
-    // UUID value
     UILabel *t2 = [[UILabel alloc] initWithFrame:CGRectMake(cw-170, 35, 155, 18)];
     t2.text = [NSString stringWithFormat:@"...%@", [uuid substringToIndex:8]];
     t2.font = [UIFont fontWithName:@"Courier" size:13];
@@ -66,7 +65,6 @@ static BOOL      gDone       = NO;
     t2.textAlignment = NSTextAlignmentRight;
     [card addSubview:t2];
 
-    // Info button
     UIButton *ib = [UIButton buttonWithType:UIButtonTypeSystem];
     ib.frame = CGRectMake(8, 12, 32, 32);
     if (@available(iOS 13,*)) {
@@ -78,22 +76,25 @@ static BOOL      gDone       = NO;
     [card addSubview:ib];
 
     CGFloat y = 62;
-    // صف 1
-    [card addSubview:[self sep:CGRectMake(0,y,cw,0.5)]]; y+=0.5;
-    [card addSubview:[self row:CGRectMake(0,y,cw,60) title:@"توليد معرّف جديد وإعادة التشغيل"
-        color:[UIColor whiteColor] icon:@"arrow.clockwise" sel:@selector(doGenerate)]]; y+=60;
-    // صف 2
-    [card addSubview:[self sep:CGRectMake(0,y,cw,0.5)]]; y+=0.5;
-    [card addSubview:[self row:CGRectMake(0,y,cw,60) title:@"مسح البيانات وتوليد معرّف جديد"
-        color:[UIColor colorWithRed:1 green:0.3 blue:0.3 alpha:1] icon:@"trash"
-        sel:@selector(doClear)]]; y+=60;
-    // صف 3 — تليغرام
-    [card addSubview:[self sep:CGRectMake(0,y,cw,0.5)]]; y+=0.5;
-    [card addSubview:[self row:CGRectMake(0,y,cw,48) title:@"قناة التراث ستور على تليغرام"
-        color:[UIColor colorWithRed:0.2 green:0.6 blue:1 alpha:1] icon:@"paperplane.fill"
-        sel:@selector(openTelegram)]];
 
-    // حقوق
+    [card addSubview:[self sep:CGRectMake(0,y,cw,0.5)]]; y += 0.5;
+    [card addSubview:[self row:CGRectMake(0,y,cw,60)
+        title:@"توليد معرّف جديد وإعادة التشغيل"
+        color:[UIColor whiteColor] icon:@"arrow.clockwise"
+        sel:@selector(doGenerate)]]; y += 60;
+
+    [card addSubview:[self sep:CGRectMake(0,y,cw,0.5)]]; y += 0.5;
+    [card addSubview:[self row:CGRectMake(0,y,cw,60)
+        title:@"مسح البيانات وتوليد معرّف جديد"
+        color:[UIColor colorWithRed:1 green:0.3 blue:0.3 alpha:1]
+        icon:@"trash" sel:@selector(doClear)]]; y += 60;
+
+    [card addSubview:[self sep:CGRectMake(0,y,cw,0.5)]]; y += 0.5;
+    [card addSubview:[self row:CGRectMake(0,y,cw,48)
+        title:@"قناة التراث ستور على تليغرام"
+        color:[UIColor colorWithRed:0.2 green:0.6 blue:1 alpha:1]
+        icon:@"paperplane.fill" sel:@selector(openTelegram)]];
+
     UILabel *copy = [[UILabel alloc] initWithFrame:CGRectMake(0, ch-22, cw, 18)];
     copy.text = @"© حقوق التراث ستور";
     copy.font = [UIFont systemFontOfSize:10];
@@ -109,17 +110,25 @@ static BOOL      gDone       = NO;
 }
 
 - (UIButton *)row:(CGRect)f title:(NSString *)t color:(UIColor *)c
-              icon:(NSString *)icon sel:(SEL)sel {
+             icon:(NSString *)icon sel:(SEL)sel {
     UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];
     btn.frame = f;
-    UILabel *l = [[UILabel alloc] initWithFrame:CGRectMake(50,0,f.size.width-60,f.size.height)];
-    l.text = t; l.font = [UIFont systemFontOfSize:14]; l.textColor = c;
-    l.textAlignment = NSTextAlignmentRight; l.numberOfLines = 2; l.userInteractionEnabled = NO;
+    UILabel *l = [[UILabel alloc] initWithFrame:
+        CGRectMake(50, 0, f.size.width-60, f.size.height)];
+    l.text = t;
+    l.font = [UIFont systemFontOfSize:14];
+    l.textColor = c;
+    l.textAlignment = NSTextAlignmentRight;
+    l.numberOfLines = 2;
+    l.userInteractionEnabled = NO;
     [btn addSubview:l];
     if (@available(iOS 13,*)) {
-        UIImageView *iv = [[UIImageView alloc] initWithFrame:CGRectMake(12,(f.size.height-24)/2,24,24)];
-        iv.image = [[UIImage systemImageNamed:icon] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-        iv.tintColor = c; iv.userInteractionEnabled = NO;
+        UIImageView *iv = [[UIImageView alloc] initWithFrame:
+            CGRectMake(12, (f.size.height-24)/2, 24, 24)];
+        iv.image = [[UIImage systemImageNamed:icon]
+            imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        iv.tintColor = c;
+        iv.userInteractionEnabled = NO;
         [btn addSubview:iv];
     }
     [btn addTarget:self action:sel forControlEvents:UIControlEventTouchUpInside];
@@ -146,45 +155,61 @@ static BOOL      gDone       = NO;
 }
 
 - (void)doGenerate {
-    tiraathNewUUID(); [self closeMenu];
+    tiraathNewUUID();
+    [self closeMenu];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW,(int64_t)(0.3*NSEC_PER_SEC)),
-        dispatch_get_main_queue(),^{ exit(0); });
+        dispatch_get_main_queue(), ^{ exit(0); });
 }
 
 - (void)doClear {
-    @try { [[NSUserDefaults standardUserDefaults]
-        removePersistentDomainForName:[[NSBundle mainBundle] bundleIdentifier]];
-    } @catch(...){}
-    tiraathNewUUID(); [self closeMenu];
+    @try {
+        [[NSUserDefaults standardUserDefaults]
+            removePersistentDomainForName:[[NSBundle mainBundle] bundleIdentifier]];
+    } @catch(...) {}
+    tiraathNewUUID();
+    [self closeMenu];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW,(int64_t)(0.3*NSEC_PER_SEC)),
-        dispatch_get_main_queue(),^{ exit(0); });
+        dispatch_get_main_queue(), ^{ exit(0); });
 }
 
 - (void)openTelegram {
     NSURL *url = [NSURL URLWithString:@"https://t.me/turath_st/"];
     if (@available(iOS 10,*)) {
         [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
-    } else { [[UIApplication sharedApplication] openURL:url]; }
+    } else {
+        [[UIApplication sharedApplication] openURL:url];
+    }
 }
+
 @end
+
 @interface TiraathBtnVC : UIViewController
 @end
+
 @implementation TiraathBtnVC
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor clearColor];
+
     UIButton *btn = [UIButton buttonWithType:UIButtonTypeCustom];
-    btn.frame = CGRectMake(0,0,52,52);
-    btn.layer.cornerRadius = 26; btn.clipsToBounds = YES;
+    btn.frame = CGRectMake(0, 0, 52, 52);
+    btn.layer.cornerRadius = 26;
+    btn.clipsToBounds = YES;
     btn.backgroundColor = [UIColor colorWithWhite:0.1 alpha:0.85];
-    btn.layer.borderColor = [UIColor colorWithRed:0.25 green:0.65 blue:1 alpha:0.9].CGColor;
+    btn.layer.borderColor =
+        [UIColor colorWithRed:0.25 green:0.65 blue:1 alpha:0.9].CGColor;
     btn.layer.borderWidth = 2;
+
     UILabel *ic = [[UILabel alloc] initWithFrame:btn.bounds];
-    ic.text = @"🌐"; ic.textAlignment = NSTextAlignmentCenter;
-    ic.font = [UIFont systemFontOfSize:26]; ic.userInteractionEnabled = NO;
+    ic.text = @"🌐";
+    ic.textAlignment = NSTextAlignmentCenter;
+    ic.font = [UIFont systemFontOfSize:26];
+    ic.userInteractionEnabled = NO;
     [btn addSubview:ic];
-    [btn addTarget:self action:@selector(tapped) forControlEvents:UIControlEventTouchUpInside];
+
+    [btn addTarget:self action:@selector(tapped)
+        forControlEvents:UIControlEventTouchUpInside];
     UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc]
         initWithTarget:self action:@selector(dragged:)];
     [btn addGestureRecognizer:pan];
@@ -193,13 +218,17 @@ static BOOL      gDone       = NO;
 
 - (void)tapped {
     if (gMenuWindow && !gMenuWindow.hidden) {
-        gMenuWindow.hidden = YES; gMenuWindow = nil; return;
+        gMenuWindow.hidden = YES;
+        gMenuWindow = nil;
+        return;
     }
     @try {
         UIWindow *mw = nil;
         if (@available(iOS 13,*))
-            mw = [[UIWindow alloc] initWithWindowScene:(UIWindowScene *)gBtnWindow.windowScene];
-        if (!mw) mw = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+            mw = [[UIWindow alloc] initWithWindowScene:
+                (UIWindowScene *)gBtnWindow.windowScene];
+        if (!mw)
+            mw = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
         mw.frame = [UIScreen mainScreen].bounds;
         mw.windowLevel = UIWindowLevelAlert + 90;
         mw.backgroundColor = [UIColor clearColor];
@@ -218,17 +247,19 @@ static BOOL      gDone       = NO;
     gBtnWindow.frame = f;
     [g setTranslation:CGPointZero inView:self.view];
 }
+
 @end
 
-// Hook تزوير UUID
 %hook UIDevice
 - (NSUUID *)identifierForVendor {
-    @try { return [[NSUUID alloc] initWithUUIDString:tiraathGetUUID()]; }
-    @catch (...) { return %orig; }
+    @try {
+        return [[NSUUID alloc] initWithUUIDString:tiraathGetUUID()];
+    } @catch (...) {
+        return %orig;
+    }
 }
 %end
 
-// إنشاء النافذة العائمة
 static void tiraathCreateWindow() {
     if (gDone) return;
     gDone = YES;
@@ -243,19 +274,25 @@ static void tiraathCreateWindow() {
                 }
             }
         }
-        if (!win) win = [[UIWindow alloc] initWithFrame:CGRectMake(0,0,52,52)];
+        if (!win)
+            win = [[UIWindow alloc] initWithFrame:CGRectMake(0,0,52,52)];
         win.frame = CGRectMake(20, 220, 52, 52);
         win.windowLevel = UIWindowLevelStatusBar + 300;
         win.backgroundColor = [UIColor clearColor];
         win.rootViewController = [[TiraathBtnVC alloc] init];
         win.hidden = NO;
         gBtnWindow = win;
-    } @catch (NSException *e) { gDone = NO; }
+    } @catch (NSException *e) {
+        gDone = NO;
+    }
 }
 
 %ctor {
     [[NSNotificationCenter defaultCenter]
         addObserverForName:UIApplicationDidBecomeActiveNotification
-                    object:nil queue:[NSOperationQueue mainQueue]
-                usingBlock:^(NSNotification *n){ tiraathCreateWindow(); }];
+                    object:nil
+                     queue:[NSOperationQueue mainQueue]
+                usingBlock:^(NSNotification *n) {
+                    tiraathCreateWindow();
+                }];
 }
