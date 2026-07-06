@@ -1,27 +1,21 @@
 #import <UIKit/UIKit.h>
-#import <substrate.h>
+#import <objc/runtime.h>
 
-static NSString *tiraathGetUUID() {
-    @try {
-        NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
-        NSString *uuid = [ud stringForKey:@"TiraathFakeUUID"];
-        if (!uuid || uuid.length < 36) {
-            uuid = [[NSUUID UUID] UUIDString];
-            [ud setObject:uuid forKey:@"TiraathFakeUUID"];
-            [ud synchronize];
-        }
-        return uuid;
-    } @catch (...) {
-        return @"4ABEF3F0-E8B6-4807-AA98-D3F2CA40B763";
+static NSString *tiraathGetUUID(void) {
+    NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+    NSString *uuid = [ud stringForKey:@"TiraathFakeUUID"];
+    if (!uuid || uuid.length < 36) {
+        uuid = [[NSUUID UUID] UUIDString];
+        [ud setObject:uuid forKey:@"TiraathFakeUUID"];
+        [ud synchronize];
     }
+    return uuid;
 }
 
-static void tiraathNewUUID() {
-    @try {
-        [[NSUserDefaults standardUserDefaults]
-            setObject:[[NSUUID UUID] UUIDString] forKey:@"TiraathFakeUUID"];
-        [[NSUserDefaults standardUserDefaults] synchronize];
-    } @catch (...) {}
+static void tiraathNewUUID(void) {
+    [[NSUserDefaults standardUserDefaults]
+        setObject:[[NSUUID UUID] UUIDString] forKey:@"TiraathFakeUUID"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 static UIWindow *gBtnWindow  = nil;
@@ -30,7 +24,6 @@ static BOOL      gDone       = NO;
 
 @interface TiraathMenuVC : UIViewController
 @end
-
 @implementation TiraathMenuVC
 
 - (void)viewDidLoad {
@@ -42,7 +35,9 @@ static BOOL      gDone       = NO;
     CGRect scr = [UIScreen mainScreen].bounds;
     CGFloat cw = MIN(scr.size.width - 60, 290), ch = 255;
     UIView *card = [[UIView alloc] initWithFrame:CGRectMake(
-        (scr.size.width-cw)/2, (scr.size.height-ch)/2, cw, ch)];
+        (scr.size.width - cw) / 2,
+        (scr.size.height - ch) / 2,
+        cw, ch)];
     card.backgroundColor = [UIColor colorWithRed:0.11 green:0.11 blue:0.13 alpha:0.97];
     card.layer.cornerRadius = 18;
     card.clipsToBounds = YES;
@@ -51,14 +46,14 @@ static BOOL      gDone       = NO;
 
     NSString *uuid = tiraathGetUUID();
 
-    UILabel *t1 = [[UILabel alloc] initWithFrame:CGRectMake(cw-170, 15, 155, 18)];
+    UILabel *t1 = [[UILabel alloc] initWithFrame:CGRectMake(cw - 170, 15, 155, 18)];
     t1.text = @"المعرّف الحالي:";
     t1.font = [UIFont systemFontOfSize:13 weight:UIFontWeightSemibold];
     t1.textColor = [UIColor whiteColor];
     t1.textAlignment = NSTextAlignmentRight;
     [card addSubview:t1];
 
-    UILabel *t2 = [[UILabel alloc] initWithFrame:CGRectMake(cw-170, 35, 155, 18)];
+    UILabel *t2 = [[UILabel alloc] initWithFrame:CGRectMake(cw - 170, 35, 155, 18)];
     t2.text = [NSString stringWithFormat:@"...%@", [uuid substringToIndex:8]];
     t2.font = [UIFont fontWithName:@"Courier" size:13];
     t2.textColor = [UIColor colorWithRed:0.35 green:0.75 blue:1 alpha:1];
@@ -67,7 +62,7 @@ static BOOL      gDone       = NO;
 
     UIButton *ib = [UIButton buttonWithType:UIButtonTypeSystem];
     ib.frame = CGRectMake(8, 12, 32, 32);
-    if (@available(iOS 13,*)) {
+    if (@available(iOS 13, *)) {
         [ib setImage:[[UIImage systemImageNamed:@"info.circle"]
             imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:0];
         ib.tintColor = [UIColor whiteColor];
@@ -77,25 +72,28 @@ static BOOL      gDone       = NO;
 
     CGFloat y = 62;
 
-    [card addSubview:[self sep:CGRectMake(0,y,cw,0.5)]]; y += 0.5;
-    [card addSubview:[self row:CGRectMake(0,y,cw,60)
+    [card addSubview:[self sep:CGRectMake(0, y, cw, 0.5)]]; y += 0.5;
+    [card addSubview:[self row:CGRectMake(0, y, cw, 60)
         title:@"توليد معرّف جديد وإعادة التشغيل"
-        color:[UIColor whiteColor] icon:@"arrow.clockwise"
+        color:[UIColor whiteColor]
+        icon:@"arrow.clockwise"
         sel:@selector(doGenerate)]]; y += 60;
 
-    [card addSubview:[self sep:CGRectMake(0,y,cw,0.5)]]; y += 0.5;
-    [card addSubview:[self row:CGRectMake(0,y,cw,60)
+    [card addSubview:[self sep:CGRectMake(0, y, cw, 0.5)]]; y += 0.5;
+    [card addSubview:[self row:CGRectMake(0, y, cw, 60)
         title:@"مسح البيانات وتوليد معرّف جديد"
         color:[UIColor colorWithRed:1 green:0.3 blue:0.3 alpha:1]
-        icon:@"trash" sel:@selector(doClear)]]; y += 60;
+        icon:@"trash"
+        sel:@selector(doClear)]]; y += 60;
 
-    [card addSubview:[self sep:CGRectMake(0,y,cw,0.5)]]; y += 0.5;
-    [card addSubview:[self row:CGRectMake(0,y,cw,48)
+    [card addSubview:[self sep:CGRectMake(0, y, cw, 0.5)]]; y += 0.5;
+    [card addSubview:[self row:CGRectMake(0, y, cw, 48)
         title:@"قناة التراث ستور على تليغرام"
         color:[UIColor colorWithRed:0.2 green:0.6 blue:1 alpha:1]
-        icon:@"paperplane.fill" sel:@selector(openTelegram)]];
+        icon:@"paperplane.fill"
+        sel:@selector(openTelegram)]];
 
-    UILabel *copy = [[UILabel alloc] initWithFrame:CGRectMake(0, ch-22, cw, 18)];
+    UILabel *copy = [[UILabel alloc] initWithFrame:CGRectMake(0, ch - 22, cw, 18)];
     copy.text = @"© حقوق التراث ستور";
     copy.font = [UIFont systemFontOfSize:10];
     copy.textColor = [[UIColor whiteColor] colorWithAlphaComponent:0.3];
@@ -114,7 +112,7 @@ static BOOL      gDone       = NO;
     UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];
     btn.frame = f;
     UILabel *l = [[UILabel alloc] initWithFrame:
-        CGRectMake(50, 0, f.size.width-60, f.size.height)];
+        CGRectMake(50, 0, f.size.width - 60, f.size.height)];
     l.text = t;
     l.font = [UIFont systemFontOfSize:14];
     l.textColor = c;
@@ -122,9 +120,9 @@ static BOOL      gDone       = NO;
     l.numberOfLines = 2;
     l.userInteractionEnabled = NO;
     [btn addSubview:l];
-    if (@available(iOS 13,*)) {
+    if (@available(iOS 13, *)) {
         UIImageView *iv = [[UIImageView alloc] initWithFrame:
-            CGRectMake(12, (f.size.height-24)/2, 24, 24)];
+            CGRectMake(12, (f.size.height - 24) / 2, 24, 24)];
         iv.image = [[UIImage systemImageNamed:icon]
             imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
         iv.tintColor = c;
@@ -135,7 +133,10 @@ static BOOL      gDone       = NO;
     return btn;
 }
 
-- (void)closeMenu { gMenuWindow.hidden = YES; gMenuWindow = nil; }
+- (void)closeMenu {
+    gMenuWindow.hidden = YES;
+    gMenuWindow = nil;
+}
 
 - (void)showInfo {
     NSString *uuid = tiraathGetUUID();
@@ -147,8 +148,9 @@ static BOOL      gDone       = NO;
             "لتجاوز حظر الأجهزة على انستقرام.\n\n© حقوق التراث ستور", uuid]
         preferredStyle:UIAlertControllerStyleAlert];
     [a addAction:[UIAlertAction actionWithTitle:@"نسخ المعرّف"
-        style:UIAlertActionStyleDefault handler:^(UIAlertAction *x){
-            [UIPasteboard generalPasteboard].string = uuid; }]];
+        style:UIAlertActionStyleDefault handler:^(UIAlertAction *x) {
+            [UIPasteboard generalPasteboard].string = uuid;
+        }]];
     [a addAction:[UIAlertAction actionWithTitle:@"حسناً"
         style:UIAlertActionStyleCancel handler:nil]];
     [self presentViewController:a animated:YES completion:nil];
@@ -157,24 +159,22 @@ static BOOL      gDone       = NO;
 - (void)doGenerate {
     tiraathNewUUID();
     [self closeMenu];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW,(int64_t)(0.3*NSEC_PER_SEC)),
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)),
         dispatch_get_main_queue(), ^{ exit(0); });
 }
 
 - (void)doClear {
-    @try {
-        [[NSUserDefaults standardUserDefaults]
-            removePersistentDomainForName:[[NSBundle mainBundle] bundleIdentifier]];
-    } @catch(...) {}
+    [[NSUserDefaults standardUserDefaults]
+        removePersistentDomainForName:[[NSBundle mainBundle] bundleIdentifier]];
     tiraathNewUUID();
     [self closeMenu];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW,(int64_t)(0.3*NSEC_PER_SEC)),
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)),
         dispatch_get_main_queue(), ^{ exit(0); });
 }
 
 - (void)openTelegram {
     NSURL *url = [NSURL URLWithString:@"https://t.me/turath_st/"];
-    if (@available(iOS 10,*)) {
+    if (@available(iOS 10, *)) {
         [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
     } else {
         [[UIApplication sharedApplication] openURL:url];
@@ -185,7 +185,6 @@ static BOOL      gDone       = NO;
 
 @interface TiraathBtnVC : UIViewController
 @end
-
 @implementation TiraathBtnVC
 
 - (void)viewDidLoad {
@@ -210,9 +209,8 @@ static BOOL      gDone       = NO;
 
     [btn addTarget:self action:@selector(tapped)
         forControlEvents:UIControlEventTouchUpInside];
-    UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc]
-        initWithTarget:self action:@selector(dragged:)];
-    [btn addGestureRecognizer:pan];
+    [btn addGestureRecognizer:[[UIPanGestureRecognizer alloc]
+        initWithTarget:self action:@selector(dragged:)]];
     [self.view addSubview:btn];
 }
 
@@ -222,72 +220,78 @@ static BOOL      gDone       = NO;
         gMenuWindow = nil;
         return;
     }
-    @try {
-        UIWindow *mw = nil;
-        if (@available(iOS 13,*))
-            mw = [[UIWindow alloc] initWithWindowScene:
-                (UIWindowScene *)gBtnWindow.windowScene];
-        if (!mw)
-            mw = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-        mw.frame = [UIScreen mainScreen].bounds;
-        mw.windowLevel = UIWindowLevelAlert + 90;
-        mw.backgroundColor = [UIColor clearColor];
-        mw.rootViewController = [[TiraathMenuVC alloc] init];
-        mw.hidden = NO;
-        gMenuWindow = mw;
-    } @catch (NSException *e) {}
+    UIWindow *mw = nil;
+    if (@available(iOS 13, *))
+        mw = [[UIWindow alloc] initWithWindowScene:
+            (UIWindowScene *)gBtnWindow.windowScene];
+    if (!mw)
+        mw = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    mw.frame = [UIScreen mainScreen].bounds;
+    mw.windowLevel = UIWindowLevelAlert + 90;
+    mw.backgroundColor = [UIColor clearColor];
+    mw.rootViewController = [[TiraathMenuVC alloc] init];
+    mw.hidden = NO;
+    gMenuWindow = mw;
 }
 
 - (void)dragged:(UIPanGestureRecognizer *)g {
     CGPoint d = [g translationInView:self.view];
     CGRect f = gBtnWindow.frame;
     CGSize s = [UIScreen mainScreen].bounds.size;
-    f.origin.x = MAX(0, MIN(f.origin.x+d.x, s.width-52));
-    f.origin.y = MAX(44, MIN(f.origin.y+d.y, s.height-80));
+    f.origin.x = MAX(0, MIN(f.origin.x + d.x, s.width - 52));
+    f.origin.y = MAX(44, MIN(f.origin.y + d.y, s.height - 80));
     gBtnWindow.frame = f;
     [g setTranslation:CGPointZero inView:self.view];
 }
 
 @end
 
-%hook UIDevice
-- (NSUUID *)identifierForVendor {
-    @try {
-        return [[NSUUID alloc] initWithUUIDString:tiraathGetUUID()];
-    } @catch (...) {
-        return %orig;
-    }
-}
-%end
+static NSUUID *(*orig_IDFV)(id, SEL) = NULL;
 
-static void tiraathCreateWindow() {
+static NSUUID *hook_IDFV(id self, SEL _cmd) {
+    return [[NSUUID alloc] initWithUUIDString:tiraathGetUUID()];
+}
+
+static void installSwizzle(void) {
+    Class cls = objc_getClass("UIDevice");
+    if (!cls) return;
+    SEL sel = sel_registerName("identifierForVendor");
+    Method m = class_getInstanceMethod(cls, sel);
+    if (!m) return;
+    orig_IDFV = (NSUUID *(*)(id, SEL))method_getImplementation(m);
+    method_setImplementation(m, (IMP)hook_IDFV);
+}
+
+static void tiraathCreateWindow(void) {
     if (gDone) return;
     gDone = YES;
-    @try {
-        UIWindow *win = nil;
-        if (@available(iOS 13,*)) {
-            for (UIScene *sc in [UIApplication sharedApplication].connectedScenes) {
-                if ([sc isKindOfClass:[UIWindowScene class]] &&
-                    sc.activationState == UISceneActivationStateForegroundActive) {
-                    win = [[UIWindow alloc] initWithWindowScene:(UIWindowScene *)sc];
-                    break;
-                }
+
+    UIWindow *win = nil;
+    if (@available(iOS 13, *)) {
+        for (UIScene *sc in [UIApplication sharedApplication].connectedScenes) {
+            if ([sc isKindOfClass:[UIWindowScene class]] &&
+                sc.activationState == UISceneActivationStateForegroundActive) {
+                win = [[UIWindow alloc] initWithWindowScene:(UIWindowScene *)sc];
+                break;
             }
         }
-        if (!win)
-            win = [[UIWindow alloc] initWithFrame:CGRectMake(0,0,52,52)];
-        win.frame = CGRectMake(20, 220, 52, 52);
-        win.windowLevel = UIWindowLevelStatusBar + 300;
-        win.backgroundColor = [UIColor clearColor];
-        win.rootViewController = [[TiraathBtnVC alloc] init];
-        win.hidden = NO;
-        gBtnWindow = win;
-    } @catch (NSException *e) {
-        gDone = NO;
     }
+    if (!win)
+        win = [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, 52, 52)];
+
+    win.frame = CGRectMake(20, 220, 52, 52);
+    win.windowLevel = UIWindowLevelStatusBar + 300;
+    win.backgroundColor = [UIColor clearColor];
+    win.rootViewController = [[TiraathBtnVC alloc] init];
+    win.hidden = NO;
+    gBtnWindow = win;
 }
 
-%ctor {
+__attribute__((constructor))
+static void tiraathInit(void) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        installSwizzle();
+    });
     [[NSNotificationCenter defaultCenter]
         addObserverForName:UIApplicationDidBecomeActiveNotification
                     object:nil
