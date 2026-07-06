@@ -17,39 +17,25 @@ workflows:
           cp -r /tmp/theos-sdks/*.sdk $THEOS/sdks/
           rm -rf /tmp/theos-sdks
 
-      - name: Build Tweak (Dylib + Deb)
+      - name: Build Dylib
         script: |
-          echo "[-] Compiling Tweak..."
-          make package FINALPACKAGE=1
+          echo "[-] Building dylib..."
+          make
 
-          echo "[-] Extracting dylib from .deb..."
-          DEB_FILE=$(ls packages/*.deb 2>/dev/null | head -1)
-
-          if [ -n "$DEB_FILE" ]; then
-            mkdir -p /tmp/deb_extract
-            cp "$DEB_FILE" /tmp/deb_extract/pkg.deb
-            cd /tmp/deb_extract
-            ar x pkg.deb
-
-            if [ -f data.tar.gz ]; then
-              tar -xzf data.tar.gz
-            elif [ -f data.tar.xz ]; then
-              tar -xJf data.tar.xz
-            elif [ -f data.tar.lzma ]; then
-              tar --lzma -xf data.tar.lzma
-            fi
-
-            DYLIB_PATH=$(find . -name "*.dylib" | head -1)
-            if [ -n "$DYLIB_PATH" ]; then
-              cp "$DYLIB_PATH" "$CM_BUILD_DIR/ChangeIP.dylib"
-              echo "✅ Dylib extracted: $DYLIB_PATH"
-            else
-              echo "⚠️ Dylib not found inside .deb"
-            fi
-            cd "$CM_BUILD_DIR"
+          DYLIB=$(find .theos/obj -name "*.dylib" | head -1)
+          if [ -n "$DYLIB" ]; then
+            cp "$DYLIB" ./ChangeIP.dylib
+            echo "✅ Dylib found: $DYLIB"
           else
-            echo "⚠️ No .deb file found in packages/"
+            echo "❌ Dylib not found — listing .theos:"
+            find .theos -name "*.dylib"
+            exit 1
           fi
+
+      - name: Build Final Package (.deb)
+        script: |
+          echo "[-] Building .deb package..."
+          make package FINALPACKAGE=1
 
     artifacts:
       - ChangeIP.dylib
