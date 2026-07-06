@@ -9,6 +9,9 @@ workflows:
     scripts:
       - name: Install Theos and iOS SDKs
         script: |
+          echo "[-] Installing ldid..."
+          brew install ldid
+
           echo "[-] Cloning Theos..."
           git clone --recursive https://github.com/theos/theos.git $THEOS
 
