@@ -1,6 +1,110 @@
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
 
+// اللوغو (100×100 RGBA PNG مضغوط بصيغة Base64)
+static NSString *kTiraathLogoB64 =
+    @"iVBORw0KGgoAAAANSUhEUgAAAGQAAABjCAYAAABt56XsAAAAIGNIUk0AAHomAACAhAAA+gAAAIDo"
+    @"AAB1MAAA6mAAADqYAAAXcJy6UTwAAAAGYktHRAAAAAAAAPlDu38AAAAJcEhZcwAACxIAAAsSAdLd"
+    @"fvwAAAAHdElNRQfqBwYROzt8Hd7TAAAEknpUWHRSYXcgcHJvZmlsZSB0eXBlIHhtcAAASImdV1m2"
+    @"6ygM/NcqegmAENjL8fXw1+e8z7f8rhKekthJbicnCQEhVWkCy99//8g/eMW+z6Jj7XSoXZlqKFOx"
+    @"mktMgf/LWOaqXNMppRJLLktJxXRo87v0klIKcqjB5A+3WJcnCylkLUvFxhS0pFmDf5LOYUiBb0BI"
+    @"UF50sJSz5PJkvy0SQ1cz3kEH2Fyqv9JcIZRmN1HTolF7vtMiGjRhIuF7akrwq7WHWsCuXZpogMsH"
+    @"lmdEOReTqkUx0Tu1Hl6YgXAVgF8SbMMTRAhHPCg6v2snBym4roOqC1qOaT7cjTH8VyasrHtILboT"
+    @"l/f2zjFkYF6Nyb01bIk10KHfmDpRcx+V31Hb9vwfaqF0hQoWhImjlaZ8afll+zNl+Yxhi0w26y5o"
+    @"K1OnRIHVgfqPQP6WLPCrTvJSCgEJmMp4lAEFaQgbjYXKnIcLmkEvWeb8BTUd99QcWLhQAJWmJAAi"
+    @"ptiu48GhScmr2BWhs3IL8EpHhOgTDL+jZK15hbmdhEoOj9autx27NrPyhd3+SoGb7VQ3s/Ldtmu6"
+    @"a90NeaKPPMkrt0ckHF2Z2KPQFSf8Vv8uln12AAJ0VHQed/cHRR+ss3uZyzJIrAHEVWchKbQ2xVJC"
+    @"AzvbudlybUj2mkcLh9M8b9gTm3cMnoL3shMej2p/lZZH8Rta+/bMbO9bdjvWPYbyaOdO8JMB6+SK"
+    @"ECxUP1viE53uWvqyjTzY6b83I/fiN3ReOyTPtcio2SnQVvKvUnJXK496r9S+7wbeN5FzgubBWwVu"
+    @"G4hYRRpgnOc2q3P9STyF1UDESWv5oYShk5elVYVHOaND8iBCVhua/bhvS94NUchch3CE/7RJQLIv"
+    @"mfP4RBAFB02SU7ac4QfTnKN7JGO55IhRB690cM6EmYp5vgrXCC9jG15UjduCrJbxTfh+ZUjslIww"
+    @"Ivpjk4ueVhoWd3FHmk2ZvHA/YPdA1GdTt50NuEBBY2Y0id7UUWNN1SRNGHAYQJG/0AORznHTZyPi"
+    @"B2PmQWauNTPbP2v5hDwKxYCDIef5mZ6JuOCOksZghjgDzBaHAYyKEiFM776cBJ3krleGAA6lcwPp"
+    @"eDoWW9ztnbsdCvFNByStonWl0Oq+4jOv7qwMOo9FJEe/Ys3MOHZzHl+eJLgf1N6Q2S1HrEXDE3Di"
+    @"3RF0Oc8SiFyBY0dfg6GXtZBGcSztcERrq7yjhk0l/dc81foTMLo5xg7HdYZsdIoIjuCP+RWXvug1"
+    @"rzQJPBKnLe1CCgq55Zab6DckGFeOZTtffao7lksbr8dgnep0mNjRn7DLW/BoJQ49smjwCx9jlKE6"
+    @"P2OX78G/xy4fwPPx4CvXCwCzgpI7u6O7nYB5qsXvXS+/gX9Gv+Iv7KMsI7ltHDwO0PmumgtWf4wy"
+    @"xbPe7yy4+du4Za49FSwYjptyIEh1Ol/Ctm7d2rLcdeubls8b7FAerhc3B+R+fm1Ph0QWrxWf33Js"
+    @"QZ33OrMQC/peyevJ9bB6r07Owu+su3duiZ2onRXy0fL1yfL8WHwyntgAcWMLQ7ulPT+y+23+P7xq"
+    @"naFlA8wCAAAAAW9yTlQBz6J3mgAAF6lJREFUeNrtnWlwHMd1x389s7u4QYAkiMVNggQJiuSCEg9R"
+    @"lyWVRcpXRF0+VJYl2aoktmzFkRV/SKXKiZMPSZXjHJVKylXxKduyY0eSLckybYuOREbiTYKHQIAg"
+    @"RBLESYAkLmJ3gZ3ufOiZ2dklIOJY7BKK/6qlFjO9PTPvP93v9evXrwUZRii0frJT2UAZsBxYbX+W"
+    @"A5XAYmABkDXJb6PAINAPdABtwEn70wZ0A5GJfnjsWGNG5SEycdFQKAQYyYcNIAiEgFuAjcBKYAmQ"
+    @"P9EPpgkJjAAXgFPAQWAPcAzosc8nFD927FjaZZNWQiZpDRXAbcCH0UQsZfI3P9WIAmfRxPwaeAvo"
+    @"TC6UzlaTFkImICIL3QIeQhOxAvCl7aknRgw4jSbmBXQLinoLpIOYOSVkAiLygQ8CTwB3AUVz/oQz"
+    @"wwDwBvB9YCe6q3Mxl8TMCSEbNmxgfNzyHsoB7gU+D9yJVtjzARHgTeBbwG+AsHPC7zc5dOhQyi+Y"
+    @"ckKSWoUAbgWeAT6CJmY+Igy8Bvwz8DagnBOpbi0pJSSJjArgaeBJtJn6fkA/8B3g3/Ao/1SSkhJC"
+    @"kogw0K3hr9GK+/2Ig8DX0a3GNZdTQYw52wqSyFgI/BXwD0BtWkWUXpQDH0UbKY3YuqW0NEhvb8+s"
+    @"Kp4VIUlk3AD8B7qLmi9KezbIBu4A1qJJ6YPZkzJjQpLI2IruW2/LtJQygJVoE74VeBdmR8qMCHHI"
+    @"EAIBfBrdMt7PXdS1sAS4B+gRghMwc1KmTYinZRjAF4B/4v1jRc0GBehB7xBwCFAzIWVahCSR8TRa"
+    @"eRdkWhLXEbLR3dcIcIAZkDJlQhwylEIIwVPA3wN5mZbAdYgAWtkPKMVBIabXfU2JEK8CF4LPAN/k"
+    @"Dy3jvRAAbheCDrR7f8qkXJOQJGvqQ2gFvijTTzwPkIV2G51Ae5GnRMp7EtLQsN785zq0abs00086"
+    @"j5CP9lbsQk+MEQy+NynvOQehXBcai4FvAPUzuSulFFLKmfz0uoMQAsOY1uRlPVp2jwL9HplOXP9k"
+    @"JzxdlYlW4F+dyQMopSgoKGTLLVvIyc62j4F2mAo8jlOco5Oc8paIn/KWSXoakXzQrlMI597ilTjf"
+    @"hX1SoRB4v4MwDFpbT9N8ssktNw18A/hLwILJ/V4TtpCGhgaUcqTCdvR4Y0ZQSlEaLOWrzz5LUXER"
+    @"SnlbyqRSn6Qyj3y93yc6561eTHItTznnRZioqFL6hM/n57kf/piTTU1Mnw++AOwFXgRFQ0MDR48e"
+    @"nRohSrlXqwG+hu4LZwwhhP2QKv63KxAxgfAmIMJTVL+uk5R3q9YnhV1WFxdX1+Xe49XH4lwKlFIo"
+    @"pabbXXmRb8vyEIhzk3VdV9WeNPh7BmiYDRnOk1mWZcsh/nDK8xoq5w6V5k1/nHLeqtTVb6/SxxXJ"
+    @"9XrrVPFrOMeIf3Rd8friV7O7KwFSytnqwgZbpkaSrCcnxIO7gMdnTYb9WIZh6K5B2f21ip9Trl5I"
+    @"oOiqOhLKOb9XIJWM12eTKez/XJI8rVE5xHro8JLlvRYKpP170zRnojuS8bgt2wmR0GV5GMsHvkKK"
+    @"ghCUgljMYnw8hpQWTh8S73WSFcNE/UqiYlC2y8ARknIuZP/PUhIpFVJamiBDeK4TV9QkXRm7BQuP"
+    @"MpFK2T1uUiubGYps2e4HRkKh9QkKfjKz96Nol/qsIYSgu7ubr/3N3xIIBPTDxk/Gy5HcJrzHlOeY"
+    @"/ZYrhenz8eRnn2DtmtXEYhaOCSWl4rkfPc/RxkabeOG5lprYIEi+qP075S2voKurC2HMupVstWX8"
+    @"X8knXEI8rWMB2iIIpIqQ0SsjHNi3JxXVJd68z8d9H/sIitXE1bgm68Tx4+x68w18vllPil71PLNQ"
+    @"7A4CaBnvAAa9rWSiFvIhdARhSh/CNFMrGNB9uiJulsZbj0QIgc9nzsl1U4Rb0LJOaCUGJLhIctFK"
+    @"JyWtIx1QMq43HBNNSnV1/3f9IYCWdS7EOTDiDwPAFrTreB4hbi0pFbee1DxgBC3rLRDnwNsZCuBh"
+    @"ZjkInCs4/jDLspIsHZE0bvE+jobzOyllKqykVCIfLXP3Zn0eZV4NbMv0HXrhCNDn81O4oICSxSUU"
+    @"GAM96J8tGZBiYSWN6hcBfwx8kRS77zOIDuDfgf8ELjoHU0GEg5QuY0vqwsLoiLzfo9Og1jJ/xyyD"
+    @"6MzTX0bHUYWdE6kkA+awO0lqLT60H+zz6LTaaU8JNUMMoV3m30L7o9zY51QT4WBO+/d16xqS/UjO"
+    @"hr2PoYkJzqTeNKAHTcRzwNvo9RuA9kAfP350pvVeE2lRuBPs12cCa9C7iN5nf095yNE0EQbeAV4G"
+    @"fml/94ajzFmr8CKtFtBEGykCC4FNwL3oKJeVpG+v9mH02r5daJP9AHApuVA6iHCQMZP0PcipBzaj"
+    @"SboBPfpfwOxz04+hlXMnOnjjANo8bybDJHiR8THC2rUNCVmnPTDRpnMNutWsQqfjrkJngS5Cz8lk"
+    @"EbcWLXR/P4oeqPYC59EbzLegW8M5tMlqJV9QSsWJE3OnH6aC/wMjXk8D9oCGwgAAA65lWElmTU0A"
+    @"KgAAAAgACAESAAMAAAABAAEAAAEaAAUAAAABAAAAbgEbAAUAAAABAAAAdgEoAAMAAAABAAIAAAEx"
+    @"AAIAAAAIAAAAfgEyAAIAAAAUAAAAhgE7AAIAAAAHAAAAmodpAAQAAAABAAAAogAAAAAAAABIAAAA"
+    @"AQAAAEgAAAABUGljc2FydAAyMDI2OjA3OjA2IDIwOjM4OjYxAGhhbThkMQAAAAWQAwACAAAAFAAA"
+    @"AOSgAQADAAAAAQABAACgAgAEAAAAAQAABQqgAwAEAAAAAQAABQOkMAACAAACtQAAAPgAAAAAMjAy"
+    @"NjowNzowNiAyMDozODo2MQB7ImlzX3N0aWNrZXJfbW9kaWZpZWQiOnRydWUsImlzX3JlbWl4Ijpm"
+    @"YWxzZSwidWlkIjoiMTg1QzJCRUQtNTRBNy00MTZBLTgwOEMtMTc0MzM2NkE3RkRCIiwicHJlbWl1"
+    @"bV9zb3VyY2VzIjpbXSwic291cmNlIjoib3RoZXIiLCJzdGlja2VyX2lkIjoiOTg5RTZEQkUtMzIx"
+    @"Ri00QTUxLThCQzUtQkJDMEVCQzZCNThEIiwibGFzdF90b29sIjoidG9vbF9zaGFwZV9jcm9wIiwi"
+    @"c291cmNlX3NpZCI6IkVCNTlFMEJGLUJBRjAtNEI4My1COTJELTNFREZDNjAxRjIwNl8xNzgzMzU5"
+    @"Mzk4Mjc3Iiwib3JpZ2luIjoiZ2FsbGVyeSIsInRyYW5zcGFyZW5jeV92YWx1ZSI6eyJtYXhfYWxw"
+    @"aGEiOjEsIm1pbl9hbHBoYSI6MCwib3BhY2l0eTkwIjp7InBlcmNlbnRhZ2UiOjIxLjQ5MTM1NTg5"
+    @"NTk5NjA5NCwib3BhcXVlX2JvdW5kcyI6eyJ5IjowLCJ3IjoxMjkwLCJ4IjowLCJoIjoxMjgzfX0s"
+    @"Im9wYWNpdHkwIjp7InBlcmNlbnRhZ2UiOjIxLjI2MzUxMTY1NzcxNDg0NCwib3BhcXVlX2JvdW5k"
+    @"cyI6eyJ5IjowLCJ3IjoxMjkwLCJ4IjowLCJoIjoxMjgzfX0sIm9wYWNpdHk5OSI6eyJwZXJjZW50"
+    @"YWdlIjoyMS41MzIyNjA4OTQ3NzUzOTEsIm9wYXF1ZV9ib3VuZHMiOnsieSI6MCwidyI6MTI5MCwi"
+    @"eCI6MCwiaCI6MTI4M319fSwiZnRlX3NvdXJjZXMiOltdLCJ1c2VkX3NvdXJjZXMiOiJ7XCJ2ZXJz"
+    @"aW9uXCI6MSxcInNvdXJjZXNcIjpbXX0ifQAARG8E3gAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyNi0w"
+    @"Ny0wNlQxNzo1NDowOCswMDowMMzte6wAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjYtMDctMDZUMTc6"
+    @"NTQ6MDgrMDA6MDC9sMMQAAAAKHRFWHRkYXRlOnRpbWVzdGFtcAAyMDI2LTA3LTA2VDE3OjU5OjU4"
+    @"KzAwOjAwV7tnGwAAABJ0RVh0ZXhpZjpBcnRpc3QAaGFtOGQxGnwZSAAAAZR6VFh0ZXhpZjpDYW1l"
+    @"cmFPd25lck5hbWUAACiRpZLZjtsgGIXfheswYl9yZ7y8RFMh6pAEjbeCPU0U5d2LPZNWleammis4"
+    @"P+d8P9sdhGTTHNpXH20/HsMp+CPYz3Hxu3Up+j5cwf7kupQLS8hrACteElNXkLNCQoZFARVSJcSS"
+    @"USpEIZvKgB2Y1uzS2zQusfUJ7L9934F3kSHjfPExu569N7JWuhaVqSEluIGs4BgqU3JoTIlqUwrD"
+    @"VZUznUuzncexy5F1sOniJm/bOE7g2cKmjVgbrmtkGmiKBkFmFIVGkwrSumpKgXBDkLBYKkq5ploR"
+    @"KTNhjOEchpw+u67z8ZZLc3RDmlz0Q3uzb65b8hnuoHdX67rp4sAe70AfhqdCGTK5Nsw3jVbj5POW"
+    @"htmdc4zgF6Yx5VxprrVAmm3mn4u3P8ZlOKY1cNsYvzKX6Dy5bvKySkUfjz/0z+BEUI6x4FJiptgX"
+    @"4Fp/QueUEIGUZlJyqvF/0zP+NPt/P8WS/PFvBdwP4M3HFMbhsN7r4eNF02F1P8DjNw7P0AZtXXnX"
+    @"AAAAEXRFWHRleGlmOkNvbG9yU3BhY2UAMQ+bAkkAAAAhdEVYdGV4aWY6RGF0ZVRpbWUAMjAyNjow"
+    @"NzowNiAyMDozODo2MV+bf7EAAAApdEVYdGV4aWY6RGF0ZVRpbWVPcmlnaW5hbAAyMDI2OjA3OjA2"
+    @"IDIwOjM4OjYxzBeXdwAAABN0RVh0ZXhpZjpFeGlmT2Zmc2V0ADE2MiUYjiEAAAAZdEVYdGV4aWY6"
+    @"UGl4ZWxYRGltZW5zaW9uADEyOTAV2J+jAAAAGXRFWHRleGlmOlBpeGVsWURpbWVuc2lvbgAxMjgz"
+    @"LDEksAAAABV0RVh0ZXhpZjpTb2Z0d2FyZQBQaWNzYXJ0o11EpQAAAZZ6VFh0ZXhpZkVYOkNhbWVy"
+    @"YU93bmVyTmFtZQAAKJGlktmO2yAYhd+F6zBiX3JnvLxEUyHqkASNt4I9TRTl3Ys9k1aV5qaaKzg/"
+    @"53w/2x2EZNMc2lcfbT8ewyn4I9jPcfG7dSn6PlzB/uS6lAtLyGsAK14SU1eQs0JChkUBFVIlxJJR"
+    @"KkQhm8qAHZjW7NLbNC6x9Qnsv33fgXeRIeN88TG7nr03sla6FpWpISW4gazgGCpTcmhMiWpTCsNV"
+    @"lTOdS7Odx7HLkXWw6eImb9s4TuDZwqaNWBuua2QaaIoGQWYUhUaTCtK6akqBcEOQsFgqSrmmWhEp"
+    @"M2GM4RyGnD67rvPxlktzdEOaXPRDe7NvrlvyGe6gd1fruuniwB7vQB+Gp0IZMrk2zDeNVuPk85aG"
+    @"2Z1zjOAXpjHlXGmutUCabeafi7c/xmU4pjVw2xi/MpfoPLlu8rJKRR+PP/TP4ERQjrHgUmKm2Bfg"
+    @"Wn9C55QQgZRmUnKq8X/TM/40+38/xZL88W8F3A/gzccUxuGw3uvh40XTYXU/wOM3Ds/QBh+WMwIA"
+    @"AAApdEVYdHBob3Rvc2hvcDpEYXRlQ3JlYXRlZAAyMDI2LTA3LTA2VDIwOjM4OjYxgKtkPQAAABJ0"
+    @"RVh0dGlmZjpPcmllbnRhdGlvbgAxt6v8OwAAABB0RVh0eG1wOkNvbG9yU3BhY2UAMQUOyNEAAAAX"
+    @"dEVYdHhtcDpDcmVhdG9yVG9vbABQaWNzYXJ0cPSIZQAAACJ0RVh0eG1wOk1vZGlmeURhdGUAMjAy"
+    @"Ni0wNy0wNlQyMDozODo2MT4PdXAAAAAYdEVYdHhtcDpQaXhlbFhEaW1lbnNpb24AMTI5MIbLb3MA"
+    @"AAAYdEVYdHhtcDpQaXhlbFlEaW1lbnNpb24AMTI4M78i1GAAAAAASUVORK5CYII=";
+
 static NSString *tiraathGetUUID(void) {
     NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
     NSString *uuid = [ud stringForKey:@"TiraathFakeUUID"];
@@ -33,7 +137,8 @@ static BOOL      gDone       = NO;
         initWithTarget:self action:@selector(closeMenu)]];
 
     CGRect scr = [UIScreen mainScreen].bounds;
-    CGFloat cw = MIN(scr.size.width - 60, 290), ch = 255;
+    // ارتفاع البطاقة يأخذ بعين الاعتبار السطرين للمعرّف الكامل
+    CGFloat cw = MIN(scr.size.width - 60, 290), ch = 273;
     UIView *card = [[UIView alloc] initWithFrame:CGRectMake(
         (scr.size.width - cw) / 2,
         (scr.size.height - ch) / 2,
@@ -44,6 +149,7 @@ static BOOL      gDone       = NO;
     [card addGestureRecognizer:[[UITapGestureRecognizer alloc] init]];
     [self.view addSubview:card];
 
+    // نقرأ المعرّف مرة واحدة ونعرضه في مكانين — يضمن التطابق دائماً
     NSString *uuid = tiraathGetUUID();
 
     UILabel *t1 = [[UILabel alloc] initWithFrame:CGRectMake(cw - 170, 15, 155, 18)];
@@ -53,11 +159,15 @@ static BOOL      gDone       = NO;
     t1.textAlignment = NSTextAlignmentRight;
     [card addSubview:t1];
 
-    UILabel *t2 = [[UILabel alloc] initWithFrame:CGRectMake(cw - 170, 35, 155, 18)];
-    t2.text = [NSString stringWithFormat:@"...%@", [uuid substringToIndex:8]];
-    t2.font = [UIFont fontWithName:@"Courier" size:13];
+    // *** إصلاح #1: نعرض المعرّف الكامل (لا المقتطع) ليكون مطابقاً لشاشة المعلومات ***
+    UILabel *t2 = [[UILabel alloc] initWithFrame:CGRectMake(8, 35, cw - 16, 36)];
+    t2.text = uuid;                              // المعرّف الكامل
+    t2.font = [UIFont fontWithName:@"Courier" size:11];
     t2.textColor = [UIColor colorWithRed:0.35 green:0.75 blue:1 alpha:1];
-    t2.textAlignment = NSTextAlignmentRight;
+    t2.textAlignment = NSTextAlignmentCenter;
+    t2.numberOfLines = 2;
+    t2.adjustsFontSizeToFitWidth = YES;
+    t2.minimumScaleFactor = 0.7;
     [card addSubview:t2];
 
     UIButton *ib = [UIButton buttonWithType:UIButtonTypeSystem];
@@ -70,7 +180,7 @@ static BOOL      gDone       = NO;
     [ib addTarget:self action:@selector(showInfo) forControlEvents:UIControlEventTouchUpInside];
     [card addSubview:ib];
 
-    CGFloat y = 62;
+    CGFloat y = 80; // أسفل منطقة المعرّف الممتدة
 
     [card addSubview:[self sep:CGRectMake(0, y, cw, 0.5)]]; y += 0.5;
     [card addSubview:[self row:CGRectMake(0, y, cw, 60)
@@ -139,6 +249,7 @@ static BOOL      gDone       = NO;
 }
 
 - (void)showInfo {
+    // *** يقرأ من نفس المصدر (NSUserDefaults) كما تفعل البطاقة → دائماً متطابقان ***
     NSString *uuid = tiraathGetUUID();
     UIAlertController *a = [UIAlertController
         alertControllerWithTitle:@"هوية الجهاز (UUID)"
@@ -193,19 +304,18 @@ static BOOL      gDone       = NO;
 
     UIButton *btn = [UIButton buttonWithType:UIButtonTypeCustom];
     btn.frame = CGRectMake(0, 0, 52, 52);
-    btn.layer.cornerRadius = 26;
-    btn.clipsToBounds = YES;
-    btn.backgroundColor = [UIColor colorWithWhite:0.1 alpha:0.85];
-    btn.layer.borderColor =
-        [UIColor colorWithRed:0.25 green:0.65 blue:1 alpha:0.9].CGColor;
-    btn.layer.borderWidth = 2;
+    // *** إصلاح #2: لا خلفية، لا حواف، لا زوايا مستديرة — اللوغو فقط ***
+    btn.backgroundColor = [UIColor clearColor];
 
-    UILabel *ic = [[UILabel alloc] initWithFrame:btn.bounds];
-    ic.text = @"🌐";
-    ic.textAlignment = NSTextAlignmentCenter;
-    ic.font = [UIFont systemFontOfSize:26];
-    ic.userInteractionEnabled = NO;
-    [btn addSubview:ic];
+    NSData *logoData = [[NSData alloc]
+        initWithBase64EncodedString:kTiraathLogoB64
+        options:NSDataBase64DecodingIgnoreUnknownCharacters];
+    UIImage *logoImage = [UIImage imageWithData:logoData];
+    UIImageView *iv = [[UIImageView alloc] initWithFrame:btn.bounds];
+    iv.image = logoImage;
+    iv.contentMode = UIViewContentModeScaleAspectFit;
+    iv.userInteractionEnabled = NO;
+    [btn addSubview:iv];
 
     [btn addTarget:self action:@selector(tapped)
         forControlEvents:UIControlEventTouchUpInside];
