@@ -311,11 +311,9 @@ static BOOL      gDone       = NO;
         initWithBase64EncodedString:kTiraathLogoB64
         options:NSDataBase64DecodingIgnoreUnknownCharacters];
     UIImage *logoImage = [UIImage imageWithData:logoData];
-    UIImageView *iv = [[UIImageView alloc] initWithFrame:btn.bounds];
-    iv.image = logoImage;
-    iv.contentMode = UIViewContentModeScaleAspectFit;
-    iv.userInteractionEnabled = NO;
-    [btn addSubview:iv];
+    [btn setImage:logoImage forState:UIControlStateNormal];
+    btn.imageView.contentMode = UIViewContentModeScaleAspectFit;
+    [btn.imageView.layer setMasksToBounds:YES];
 
     [btn addTarget:self action:@selector(tapped)
         forControlEvents:UIControlEventTouchUpInside];
